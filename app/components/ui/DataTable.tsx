@@ -23,8 +23,8 @@ import {
     ChevronDoubleLeftIcon,
     ChevronDoubleRightIcon,
 } from '@heroicons/react/24/outline'
-import { Button } from './button'
-import { Input } from './input'
+import { Button } from './Button'
+import { Input } from './Input'
 
 // Global filter function
 const globalFilterFn: FilterFn<unknown> = (row, columnId, value) => {
@@ -312,7 +312,6 @@ export function DataTable<TData, TValue>({
                     </table>
                 </div>
             </div>
-
             {/* Pagination */}
             {pagination && (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -451,4 +450,4 @@ export const createActionsColumn = <TData,>(
         </div>
     ),
     enableSorting: false,
-}) 
+})

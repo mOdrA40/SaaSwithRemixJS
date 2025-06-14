@@ -51,4 +51,4 @@ export function LoadingButton({ children, isLoading, ...props }:
             )}
         </button>
     )
-} 
+}

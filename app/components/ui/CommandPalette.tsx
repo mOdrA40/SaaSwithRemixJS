@@ -498,4 +498,4 @@ export function useCommandPalette() {
         close,
         toggle,
     }
-} 
+}

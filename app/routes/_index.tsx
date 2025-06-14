@@ -7,8 +7,8 @@ import {
   RocketLaunchIcon,
   ShieldCheckIcon
 } from "@heroicons/react/24/outline";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
+import { Button } from "~/components/ui/Button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/Card";
 import { PLANS, FEATURES, COMPANY_INFO } from "~/data/constants";
 import { formatCurrency } from "~/lib/utils";
 
@@ -16,6 +16,19 @@ export const meta: MetaFunction = () => {
   return [
     { title: `${COMPANY_INFO.name} - ${COMPANY_INFO.tagline}` },
     { name: "description", content: COMPANY_INFO.description },
+
+    // Open Graph / Social Media
+    { property: "og:title", content: `${COMPANY_INFO.name} - ${COMPANY_INFO.tagline}` },
+    { property: "og:description", content: COMPANY_INFO.description },
+    { property: "og:type", content: "website" },
+    { property: "og:image", content: "/logo-light.png" },
+    { property: "og:url", content: "https://yoursite.com" },
+
+    // Twitter Card
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: `${COMPANY_INFO.name} - ${COMPANY_INFO.tagline}` },
+    { name: "twitter:description", content: COMPANY_INFO.description },
+    { name: "twitter:image", content: "/logo-light.png" },
   ];
 };
 

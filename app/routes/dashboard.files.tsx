@@ -1,6 +1,6 @@
-import type { MetaFunction } from "@remix-run/node"
+import type { MetaFunction } from "react-router"
 import { useState, useCallback } from "react"
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query'
 import { useDropzone } from 'react-dropzone'
 import {
     FolderIcon,
@@ -23,11 +23,11 @@ import {
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import toast from 'react-hot-toast'
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/Card"
+import { Button } from "~/components/ui/Button"
+import { Input } from "~/components/ui/Input"
 import { useFileManager } from "~/lib/store"
-import { queryKeys } from "~/lib/query-client"
+import { queryKeys } from "~/lib/queryClient"
 import { COMPANY_INFO } from "~/data/constants"
 
 export const meta: MetaFunction = () => {
@@ -141,6 +141,58 @@ const fetchFiles = async (folderId?: string): Promise<FileItem[]> => {
     return allFiles.filter(file => file.parentId === folderId)
 }
 
+// Infinite query API for large file lists
+interface FilesPage {
+    files: FileItem[]
+    nextCursor?: string
+    hasMore: boolean
+    totalCount: number
+}
+
+const fetchFilesInfinite = async ({
+    pageParam = 0,
+    folderId,
+    searchQuery = ''
+}: {
+    pageParam?: number
+    folderId?: string
+    searchQuery?: string
+}): Promise<FilesPage> => {
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Generate more files for demo
+    const generateFiles = (count: number, offset: number): FileItem[] => {
+        return Array.from({ length: count }, (_, i) => ({
+            id: `file-${offset + i}`,
+            name: `Document ${offset + i + 1}.pdf`,
+            type: 'file' as const,
+            size: Math.floor(Math.random() * 5000000) + 100000, // 100KB - 5MB
+            mimeType: 'application/pdf',
+            parentId: folderId,
+            createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+            updatedAt: new Date(),
+            isPublic: Math.random() > 0.5,
+            url: `/files/document-${offset + i + 1}.pdf`,
+        }))
+    }
+
+    const pageSize = 20
+    const offset = pageParam * pageSize
+    const files = generateFiles(pageSize, offset)
+
+    // Filter by search query
+    const filteredFiles = searchQuery
+        ? files.filter(file => file.name.toLowerCase().includes(searchQuery.toLowerCase()))
+        : files
+
+    return {
+        files: filteredFiles,
+        nextCursor: pageParam < 4 ? (pageParam + 1).toString() : undefined, // Max 5 pages
+        hasMore: pageParam < 4,
+        totalCount: 100 // Total files available
+    }
+}
+
 const uploadFile = async (file: File, folderId?: string) => {
     // Simulate upload with progress
     return new Promise<FileItem>((resolve) => {
@@ -178,15 +230,41 @@ export default function FileManager() {
     const [selectedFiles, setSelectedFiles] = useState<string[]>([])
     const [contextMenu, setContextMenu] = useState<{ fileId: string; x: number; y: number } | null>(null)
     const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgress>>({})
+    const [useInfiniteScroll, setUseInfiniteScroll] = useState(false)
 
     const { currentFolder, setCurrentFolder } = useFileManager()
     const queryClient = useQueryClient()
 
-    // Queries
+    // Regular query for small file lists
     const { data: files = [], isLoading } = useQuery({
         queryKey: queryKeys.filesList(currentFolder || undefined),
         queryFn: () => fetchFiles(currentFolder || undefined),
+        enabled: !useInfiniteScroll,
     })
+
+    // Infinite query for large file lists
+    const {
+        data: infiniteData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading: isInfiniteLoading,
+    } = useInfiniteQuery<FilesPage, Error>({
+        queryKey: ['files-infinite', currentFolder, searchQuery],
+        queryFn: ({ pageParam = 0 }) => fetchFilesInfinite({
+            pageParam: pageParam as number,
+            folderId: currentFolder || undefined,
+            searchQuery
+        }),
+        getNextPageParam: (lastPage: FilesPage) => lastPage.nextCursor ? parseInt(lastPage.nextCursor) : undefined,
+        initialPageParam: 0,
+        enabled: useInfiniteScroll,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+    })
+
+    // Flatten infinite query data
+    const infiniteFiles = infiniteData?.pages.flatMap((page: FilesPage) => page.files) || []
+    const totalCount = infiniteData?.pages[0]?.totalCount || 0
 
     // Mutations
     const uploadMutation = useMutation({
@@ -306,9 +384,13 @@ export default function FileManager() {
         setContextMenu({ fileId, x: e.clientX, y: e.clientY })
     }
 
-    const filteredFiles = files.filter(file =>
+    // Determine which files to display
+    const displayFiles = useInfiniteScroll ? infiniteFiles : files
+    const filteredFiles = displayFiles.filter(file =>
         file.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
+
+    const isLoadingFiles = useInfiniteScroll ? isInfiniteLoading : isLoading
 
     return (
         <div className="p-6 space-y-6">
@@ -324,6 +406,27 @@ export default function FileManager() {
                 </div>
 
                 <div className="mt-4 sm:mt-0 flex items-center space-x-3">
+                    {/* Infinite Scroll Toggle */}
+                    <div className="flex items-center space-x-2">
+                        <label className="text-sm text-gray-600 dark:text-gray-400">
+                            Large List Mode:
+                        </label>
+                        <button
+                            onClick={() => setUseInfiniteScroll(!useInfiniteScroll)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                useInfiniteScroll
+                                    ? 'bg-blue-600'
+                                    : 'bg-gray-200 dark:bg-gray-700'
+                            }`}
+                        >
+                            <span
+                                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    useInfiniteScroll ? 'translate-x-6' : 'translate-x-1'
+                                }`}
+                            />
+                        </button>
+                    </div>
+
                     <Button variant="outline" size="sm">
                         <FolderPlusIcon className="h-4 w-4 mr-2" />
                         New Folder
@@ -471,7 +574,21 @@ export default function FileManager() {
             {/* File Grid/List */}
             <Card>
                 <CardContent className="p-6">
-                    {isLoading ? (
+                    {/* Stats for infinite scroll */}
+                    {useInfiniteScroll && (
+                        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                            <div className="flex items-center justify-between text-sm">
+                                <span className="text-blue-700 dark:text-blue-300">
+                                    📊 Infinite Scroll Mode: Showing {infiniteFiles.length} of {totalCount} files
+                                </span>
+                                <span className="text-blue-600 dark:text-blue-400">
+                                    {hasNextPage ? 'More available' : 'All loaded'}
+                                </span>
+                            </div>
+                        </div>
+                    )}
+
+                    {isLoadingFiles ? (
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {Array.from({ length: 8 }).map((_, i) => (
                                 <div key={i} className="p-4 border rounded-lg">
@@ -588,6 +705,30 @@ export default function FileManager() {
                                     </Button>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Load More Button for Infinite Scroll */}
+                    {useInfiniteScroll && hasNextPage && (
+                        <div className="mt-6 text-center">
+                            <Button
+                                onClick={() => fetchNextPage()}
+                                disabled={isFetchingNextPage}
+                                variant="outline"
+                                size="lg"
+                            >
+                                {isFetchingNextPage ? (
+                                    <div className="flex items-center space-x-2">
+                                        <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                        <span>Loading more...</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center space-x-2">
+                                        <ArrowDownTrayIcon className="h-4 w-4" />
+                                        <span>Load More Files</span>
+                                    </div>
+                                )}
+                            </Button>
                         </div>
                     )}
                 </CardContent>

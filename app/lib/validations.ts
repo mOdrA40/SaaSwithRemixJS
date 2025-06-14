@@ -54,10 +54,20 @@ export const subscriptionSchema = z.object({
 
 // Contact/Support schemas
 export const contactSchema = z.object({
-    name: z.string().min(2, "Nama harus minimal 2 karakter"),
-    email: z.string().email("Email tidak valid"),
-    subject: z.string().min(5, "Subjek harus minimal 5 karakter"),
-    message: z.string().min(10, "Pesan harus minimal 10 karakter"),
+    name: z.string()
+        .min(2, "Nama harus minimal 2 karakter")
+        .max(50, "Nama maksimal 50 karakter"),
+    email: z.string()
+        .email("Email tidak valid")
+        .min(1, "Email diperlukan"),
+    subject: z.string()
+        .min(5, "Subjek harus minimal 5 karakter")
+        .max(100, "Subjek maksimal 100 karakter"),
+    message: z.string()
+        .min(10, "Pesan harus minimal 10 karakter")
+        .max(1000, "Pesan maksimal 1000 karakter"),
+    priority: z.enum(["low", "medium", "high"]).optional(),
+    category: z.enum(["general", "support", "sales", "partnership"]).optional(),
 })
 
 // Admin schemas
@@ -79,6 +89,8 @@ export const updateUserSchema = z.object({
 // Type exports
 export type SignUpInput = z.infer<typeof signUpSchema>
 export type SignInInput = z.infer<typeof signInSchema>
+
+
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>

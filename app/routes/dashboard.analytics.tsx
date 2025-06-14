@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node"
+import type { MetaFunction } from "react-router"
 import { useState } from "react"
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -26,10 +26,10 @@ import {
     Cell,
 
 } from 'recharts'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-// import { Button } from "~/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
+// import { Button } from "~/components/ui/Button"
 // import { useAnalytics } from "~/lib/store"
-import { queryKeys } from "~/lib/query-client"
+import { queryKeys } from "~/lib/queryClient"
 import { COMPANY_INFO } from "~/data/constants"
 
 export const meta: MetaFunction = () => {

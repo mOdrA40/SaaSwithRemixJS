@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@remix-run/react"
+import { Link, useLocation } from "react-router"
 import { useState } from "react"
 import {
     Bars3Icon,
@@ -6,7 +6,7 @@ import {
     MoonIcon,
     SunIcon
 } from "@heroicons/react/24/outline"
-import { Button } from "~/components/ui/button"
+import { Button } from "~/components/ui/Button"
 import { MAIN_NAV, COMPANY_INFO } from "~/data/constants"
 import { cn } from "~/lib/utils"
 

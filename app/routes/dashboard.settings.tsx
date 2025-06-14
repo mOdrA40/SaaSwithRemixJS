@@ -1,6 +1,16 @@
-import type { MetaFunction } from "@remix-run/node"
-import { json } from "@remix-run/node"
-import { useLoaderData } from "@remix-run/react"
+import type { MetaFunction } from "react-router"
+import { useLoaderData } from "react-router"
+
+// Helper function for json response
+const json = (data: unknown, init?: ResponseInit) => {
+    return new Response(JSON.stringify(data), {
+        ...init,
+        headers: {
+            "Content-Type": "application/json",
+            ...init?.headers,
+        },
+    })
+}
 import { useState } from "react"
 import {
     UserCircleIcon,
@@ -10,10 +20,33 @@ import {
     EyeSlashIcon,
     GlobeAltIcon
 } from "@heroicons/react/24/outline"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
+import { Button } from "~/components/ui/Button"
+import { Input } from "~/components/ui/Input"
 import { COMPANY_INFO } from "~/data/constants"
+
+// Type definitions
+type LoaderData = {
+    user: {
+        id: string
+        name: string
+        email: string
+        bio: string
+        website: string
+        company: string
+        avatar: string | null
+        createdAt: Date
+        settings: {
+            emailNotifications: boolean
+            pushNotifications: boolean
+            marketingEmails: boolean
+            securityAlerts: boolean
+            language: string
+            timezone: string
+            theme: string
+        }
+    }
+}
 
 export const meta: MetaFunction = () => {
     return [
@@ -48,7 +81,7 @@ export async function loader() {
 }
 
 export default function Settings() {
-    const { user } = useLoaderData<typeof loader>()
+    const { user } = useLoaderData() as LoaderData
     const [showPassword, setShowPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
 

@@ -1,16 +1,44 @@
-import type { ActionFunctionArgs, MetaFunction } from "@remix-run/node"
-import { json } from "@remix-run/node"
-import { Form, useActionData, useNavigation } from "@remix-run/react"
+import type { ActionFunctionArgs, MetaFunction } from "react-router"
+import { Form, useActionData, useNavigation } from "react-router"
+import { useState, useEffect } from "react"
+import { useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { motion, AnimatePresence } from "framer-motion"
+
+// Helper functions for responses
+const json = (data: unknown, init?: ResponseInit) => {
+    return new Response(JSON.stringify(data), {
+        ...init,
+        headers: {
+            "Content-Type": "application/json",
+            ...init?.headers,
+        },
+    })
+}
+
 import {
     EnvelopeIcon,
     PhoneIcon,
     MapPinIcon,
-    ClockIcon
+    ClockIcon,
+    PaperAirplaneIcon,
+    CheckCircleIcon,
+    ExclamationTriangleIcon,
+    EyeIcon,
+    UserIcon
 } from "@heroicons/react/24/outline"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import { Button } from "~/components/ui/button"
-import { Input } from "~/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
+import { Button } from "~/components/ui/Button"
+import { Input } from "~/components/ui/Input"
+import { contactSchema, type ContactInput } from "~/lib/validations"
 import { COMPANY_INFO } from "~/data/constants"
+
+// Type for action data
+type ActionData = {
+    message?: string
+    success?: boolean
+    errors?: Record<string, string[]>
+}
 
 export const meta: MetaFunction = () => {
     return [
@@ -62,10 +90,47 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Contact() {
-    const actionData = useActionData<typeof action>()
+    const actionData = useActionData() as ActionData | undefined
     const navigation = useNavigation()
+    const [showSuccess, setShowSuccess] = useState(false)
 
     const isSubmitting = navigation.state === "submitting"
+
+    // React Hook Form setup
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isValid, isDirty },
+        watch,
+        control,
+        reset,
+        setValue,
+        getValues
+    } = useForm<ContactInput>({
+        resolver: zodResolver(contactSchema),
+        mode: "onChange",
+        defaultValues: {
+            priority: "medium",
+            category: "general"
+        }
+    })
+
+    // Watch form values for dynamic features
+    const watchedMessage = useWatch({ control, name: "message" })
+    const watchedCategory = useWatch({ control, name: "category" })
+
+    // Character count for message
+    const messageLength = watchedMessage?.length || 0
+    const maxMessageLength = 1000
+
+    // Success animation effect
+    useEffect(() => {
+        if (actionData?.success) {
+            setShowSuccess(true)
+            reset()
+            setTimeout(() => setShowSuccess(false), 5000)
+        }
+    }, [actionData?.success, reset])
 
     const contactInfo = [
         {
@@ -152,71 +217,227 @@ export default function Contact() {
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
+                                {/* Success Animation */}
+                                <AnimatePresence>
+                                    {showSuccess && (
+                                        <motion.div
+                                            initial={{ opacity: 0, scale: 0.8, y: -20 }}
+                                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                                            exit={{ opacity: 0, scale: 0.8, y: -20 }}
+                                            className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800"
+                                        >
+                                            <div className="flex items-center space-x-3">
+                                                <CheckCircleIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
+                                                <div>
+                                                    <h3 className="text-sm font-medium text-green-800 dark:text-green-200">
+                                                        Pesan Terkirim!
+                                                    </h3>
+                                                    <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                                                        Terima kasih! Tim kami akan merespons dalam 24 jam.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 <Form method="post" className="space-y-6">
-                                    {actionData?.message && (
-                                        <div className={`rounded-md p-4 ${('success' in actionData) && actionData.success
-                                            ? "bg-green-50 dark:bg-green-900/20"
-                                            : "bg-red-50 dark:bg-red-900/20"
-                                            }`}>
-                                            <div className={`text-sm ${('success' in actionData) && actionData.success
+                                    {actionData?.message && !showSuccess && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={`rounded-md p-4 ${('success' in actionData) && actionData.success
+                                                ? "bg-green-50 dark:bg-green-900/20"
+                                                : "bg-red-50 dark:bg-red-900/20"
+                                                }`}>
+                                            <div className={`text-sm flex items-center space-x-2 ${('success' in actionData) && actionData.success
                                                 ? "text-green-700 dark:text-green-400"
                                                 : "text-red-700 dark:text-red-400"
                                                 }`}>
-                                                {actionData.message}
+                                                {('success' in actionData) && actionData.success ? (
+                                                    <CheckCircleIcon className="h-5 w-5" />
+                                                ) : (
+                                                    <ExclamationTriangleIcon className="h-5 w-5" />
+                                                )}
+                                                <span>{actionData.message}</span>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
+
+                                    {/* Category Selection */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                            Kategori Pertanyaan
+                                        </label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                            {[
+                                                { value: "general", label: "Umum", icon: UserIcon },
+                                                { value: "support", label: "Support", icon: ExclamationTriangleIcon },
+                                                { value: "sales", label: "Sales", icon: EnvelopeIcon },
+                                                { value: "partnership", label: "Partnership", icon: EyeIcon }
+                                            ].map((category) => (
+                                                <motion.label
+                                                    key={category.value}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    className={`relative flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                                                        watchedCategory === category.value
+                                                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                                            : "border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500"
+                                                    }`}
+                                                >
+                                                    <input
+                                                        {...register("category")}
+                                                        type="radio"
+                                                        value={category.value}
+                                                        className="sr-only"
+                                                    />
+                                                    <div className="flex flex-col items-center space-y-1">
+                                                        <category.icon className={`h-5 w-5 ${
+                                                            watchedCategory === category.value
+                                                                ? "text-blue-600 dark:text-blue-400"
+                                                                : "text-gray-400"
+                                                        }`} />
+                                                        <span className={`text-xs font-medium ${
+                                                            watchedCategory === category.value
+                                                                ? "text-blue-700 dark:text-blue-300"
+                                                                : "text-gray-600 dark:text-gray-400"
+                                                        }`}>
+                                                            {category.label}
+                                                        </span>
+                                                    </div>
+                                                </motion.label>
+                                            ))}
+                                        </div>
+                                    </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <Input
-                                            name="name"
+                                            {...register("name")}
                                             label="Nama Lengkap"
                                             placeholder="John Doe"
                                             disabled={isSubmitting}
-                                            required
+                                            error={errors.name?.message}
                                         />
                                         <Input
-                                            name="email"
+                                            {...register("email")}
                                             type="email"
                                             label="Email"
                                             placeholder="john@example.com"
                                             disabled={isSubmitting}
-                                            required
+                                            error={errors.email?.message}
                                         />
                                     </div>
 
                                     <Input
-                                        name="subject"
+                                        {...register("subject")}
                                         label="Subjek"
                                         placeholder="Tentang apa yang ingin Anda diskusikan?"
                                         disabled={isSubmitting}
-                                        required
+                                        error={errors.subject?.message}
                                     />
 
+                                    {/* Priority Selection */}
                                     <div>
-                                        <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                            Pesan
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                            Prioritas
                                         </label>
-                                        <textarea
-                                            id="message"
-                                            name="message"
-                                            rows={6}
-                                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:text-white"
-                                            placeholder="Jelaskan detail pertanyaan atau kebutuhan Anda..."
-                                            disabled={isSubmitting}
-                                            required
-                                        />
+                                        <div className="flex space-x-4">
+                                            {[
+                                                { value: "low", label: "Rendah", color: "green" },
+                                                { value: "medium", label: "Sedang", color: "yellow" },
+                                                { value: "high", label: "Tinggi", color: "red" }
+                                            ].map((priority) => (
+                                                <label
+                                                    key={priority.value}
+                                                    className="flex items-center space-x-2 cursor-pointer"
+                                                >
+                                                    <input
+                                                        {...register("priority")}
+                                                        type="radio"
+                                                        value={priority.value}
+                                                        className={`h-4 w-4 text-${priority.color}-600 focus:ring-${priority.color}-500 border-gray-300`}
+                                                    />
+                                                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                        {priority.label}
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <Button
-                                        type="submit"
-                                        size="lg"
-                                        variant="gradient"
-                                        className="w-full"
-                                        disabled={isSubmitting}
+                                    <div>
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                Pesan
+                                            </label>
+                                            <span className={`text-xs ${
+                                                messageLength > maxMessageLength * 0.9
+                                                    ? "text-red-500"
+                                                    : messageLength > maxMessageLength * 0.7
+                                                    ? "text-yellow-500"
+                                                    : "text-gray-400"
+                                            }`}>
+                                                {messageLength}/{maxMessageLength}
+                                            </span>
+                                        </div>
+                                        <textarea
+                                            {...register("message")}
+                                            id="message"
+                                            rows={6}
+                                            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 focus:border-blue-500 dark:bg-gray-800 dark:text-white transition-colors ${
+                                                errors.message
+                                                    ? "border-red-300 dark:border-red-600 focus:ring-red-500"
+                                                    : "border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+                                            }`}
+                                            placeholder="Jelaskan detail pertanyaan atau kebutuhan Anda..."
+                                            disabled={isSubmitting}
+                                        />
+                                        {errors.message && (
+                                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                                                {errors.message.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <motion.div
+                                        whileHover={{ scale: 1.01 }}
+                                        whileTap={{ scale: 0.99 }}
                                     >
-                                        {isSubmitting ? "Mengirim..." : "Kirim Pesan"}
-                                    </Button>
+                                        <Button
+                                            type="submit"
+                                            size="lg"
+                                            variant="gradient"
+                                            className="w-full"
+                                            disabled={isSubmitting || !isValid}
+                                        >
+                                            <div className="flex items-center justify-center space-x-2">
+                                                <PaperAirplaneIcon className="h-5 w-5" />
+                                                <span>
+                                                    {isSubmitting ? "Mengirim..." : "Kirim Pesan"}
+                                                </span>
+                                            </div>
+                                        </Button>
+                                    </motion.div>
+
+                                    {/* Form Status Indicator */}
+                                    <div className="text-center">
+                                        <div className={`inline-flex items-center space-x-2 text-xs ${
+                                            isValid && isDirty
+                                                ? "text-green-600 dark:text-green-400"
+                                                : "text-gray-400"
+                                        }`}>
+                                            <div className={`w-2 h-2 rounded-full ${
+                                                isValid && isDirty ? "bg-green-500" : "bg-gray-300"
+                                            }`} />
+                                            <span>
+                                                {isValid && isDirty
+                                                    ? "Form siap dikirim"
+                                                    : "Lengkapi form untuk melanjutkan"
+                                                }
+                                            </span>
+                                        </div>
+                                    </div>
                                 </Form>
                             </CardContent>
                         </Card>

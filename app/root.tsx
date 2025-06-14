@@ -11,9 +11,10 @@ import type { LinksFunction } from "react-router";
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from 'react-hot-toast';
-import { Header } from "~/components/layout/header";
-import { Footer } from "~/components/layout/footer";
-import { queryClient } from "~/lib/query-client";
+import { Header } from "~/components/layout/Header";
+import { Footer } from "~/components/layout/Footer";
+import { queryClient } from "~/lib/queryClient";
+import { QueryErrorBoundary } from "~/components/ui/QueryErrorBoundary";
 
 import "./tailwind.css";
 
@@ -51,13 +52,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      <QueryErrorBoundary>
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </QueryErrorBoundary>
 
       {/* Global Toast Notifications */}
       <Toaster

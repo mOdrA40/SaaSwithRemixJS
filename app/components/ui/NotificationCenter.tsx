@@ -14,9 +14,9 @@ import {
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import toast from 'react-hot-toast'
-import { Button } from './button'
+import { Button } from './Button'
 // import { useNotifications } from '~/lib/store'
-import { queryKeys } from '~/lib/query-client'
+import { queryKeys } from '~/lib/queryClient'
 
 interface NotificationItem {
     id: string
@@ -470,4 +470,4 @@ export function useNotificationCenter() {
     const toggle = () => setIsOpen(!isOpen)
 
     return { isOpen, open, close, toggle }
-} 
+}

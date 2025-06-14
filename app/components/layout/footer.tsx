@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react"
+import { Link } from "react-router"
 import { COMPANY_INFO } from "~/data/constants"
 
 export function Footer() {
@@ -175,4 +175,4 @@ export function Footer() {
             </div>
         </footer>
     )
-} 
+}

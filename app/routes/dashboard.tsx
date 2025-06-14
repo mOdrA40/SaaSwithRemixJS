@@ -10,8 +10,8 @@ import {
     BellIcon,
     CommandLineIcon,
 } from "@heroicons/react/24/outline"
-import { Button } from "~/components/ui/button"
-import { CommandPalette, useCommandPalette } from "~/components/ui/command-palette"
+import { Button } from "~/components/ui/Button"
+import { CommandPalette, useCommandPalette } from "~/components/ui/CommandPalette"
 import { DASHBOARD_NAV, COMPANY_INFO } from "~/data/constants"
 import { cn } from "~/lib/utils"
 

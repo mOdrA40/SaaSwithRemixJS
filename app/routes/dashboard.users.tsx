@@ -1,4 +1,4 @@
-import type { MetaFunction } from "@remix-run/node"
+import type { MetaFunction } from "react-router"
 import { useState } from "react"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ColumnDef } from '@tanstack/react-table'
@@ -14,11 +14,11 @@ import {
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import toast from 'react-hot-toast'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import { Button } from "~/components/ui/button"
-// import { Input } from "~/components/ui/input"
-import { DataTable, createSelectColumn, createActionsColumn } from "~/components/ui/data-table"
-import { queryKeys } from "~/lib/query-client"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
+import { Button } from "~/components/ui/Button"
+// import { Input } from "~/components/ui/Input"
+import { DataTable, createSelectColumn, createActionsColumn } from "~/components/ui/DataTable"
+import { queryKeys } from "~/lib/queryClient"
 import { COMPANY_INFO } from "~/data/constants"
 
 export const meta: MetaFunction = () => {
@@ -147,25 +147,69 @@ export default function UserManagement() {
     // Mutations
     const deleteUserMutation = useMutation({
         mutationFn: deleteUser,
+        onMutate: async (userId: string) => {
+            // Cancel any outgoing refetches
+            await queryClient.cancelQueries({ queryKey: queryKeys.users })
+
+            // Snapshot the previous value
+            const previousUsers = queryClient.getQueryData(queryKeys.users)
+
+            // Optimistically update to the new value
+            queryClient.setQueryData(queryKeys.users, (old: User[] | undefined) => {
+                return old?.filter(user => user.id !== userId) || []
+            })
+
+            // Return a context object with the snapshotted value
+            return { previousUsers }
+        },
+        onError: (_err, _userId, context) => {
+            // If the mutation fails, use the context returned from onMutate to roll back
+            queryClient.setQueryData(queryKeys.users, context?.previousUsers)
+            toast.error('Gagal menghapus user')
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.users })
             toast.success('User berhasil dihapus')
             setModal(null)
         },
-        onError: () => {
-            toast.error('Gagal menghapus user')
+        onSettled: () => {
+            // Always refetch after error or success
+            queryClient.invalidateQueries({ queryKey: queryKeys.users })
         },
     })
 
     const updateStatusMutation = useMutation({
         mutationFn: ({ userId, status }: { userId: string; status: User['status'] }) =>
             updateUserStatus(userId, status),
+        onMutate: async ({ userId, status }) => {
+            // Cancel any outgoing refetches
+            await queryClient.cancelQueries({ queryKey: queryKeys.users })
+
+            // Snapshot the previous value
+            const previousUsers = queryClient.getQueryData(queryKeys.users)
+
+            // Optimistically update to the new value
+            queryClient.setQueryData(queryKeys.users, (old: User[] | undefined) => {
+                return old?.map(user =>
+                    user.id === userId
+                        ? { ...user, status }
+                        : user
+                ) || []
+            })
+
+            // Return a context object with the snapshotted value
+            return { previousUsers }
+        },
+        onError: (_err, _variables, context) => {
+            // If the mutation fails, use the context returned from onMutate to roll back
+            queryClient.setQueryData(queryKeys.users, context?.previousUsers)
+            toast.error('Gagal mengubah status user')
+        },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeys.users })
             toast.success('Status user berhasil diubah')
         },
-        onError: () => {
-            toast.error('Gagal mengubah status user')
+        onSettled: () => {
+            // Always refetch after error or success
+            queryClient.invalidateQueries({ queryKey: queryKeys.users })
         },
     })
 

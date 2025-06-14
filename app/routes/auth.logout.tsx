@@ -1,4 +1,14 @@
-import { redirect } from "@remix-run/node"
+// Helper function for redirect
+const redirect = (url: string, init?: ResponseInit) => {
+    return new Response(null, {
+        ...init,
+        status: 302,
+        headers: {
+            Location: url,
+            ...init?.headers,
+        },
+    })
+}
 
 export async function action() {
     // TODO: Clear session/cookies here

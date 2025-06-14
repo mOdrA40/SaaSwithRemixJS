@@ -1,6 +1,16 @@
-import type { MetaFunction } from "@remix-run/node"
-import { json } from "@remix-run/node"
-import { useLoaderData, Link } from "@remix-run/react"
+import type { MetaFunction } from "react-router"
+import { useLoaderData, Link } from "react-router"
+
+// Helper function for json response
+const json = (data: unknown, init?: ResponseInit) => {
+    return new Response(JSON.stringify(data), {
+        ...init,
+        headers: {
+            "Content-Type": "application/json",
+            ...init?.headers,
+        },
+    })
+}
 import {
     CreditCardIcon,
     DocumentTextIcon,
@@ -8,10 +18,38 @@ import {
     CheckIcon,
     ExclamationTriangleIcon
 } from "@heroicons/react/24/outline"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card"
-import { Button } from "~/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
+import { Button } from "~/components/ui/Button"
 import { PLANS, COMPANY_INFO } from "~/data/constants"
 import { formatCurrency, formatDate } from "~/lib/utils"
+
+// Type definitions
+type LoaderData = {
+    subscription: {
+        id: string
+        plan: string
+        status: string
+        currentPeriodStart: Date
+        currentPeriodEnd: Date
+        cancelAtPeriodEnd: boolean
+        nextBillingAmount: number
+    }
+    paymentHistory: Array<{
+        id: string
+        date: Date
+        amount: number
+        status: string
+        description: string
+        invoiceUrl: string
+    }>
+    paymentMethod: {
+        id: string
+        brand: string
+        last4: string
+        expMonth: number
+        expYear: number
+    }
+}
 
 export const meta: MetaFunction = () => {
     return [
@@ -75,7 +113,7 @@ export async function loader() {
 }
 
 export default function Billing() {
-    const { subscription, paymentHistory, paymentMethod } = useLoaderData<typeof loader>()
+    const { subscription, paymentHistory, paymentMethod } = useLoaderData() as LoaderData
 
     const currentPlan = PLANS.find(plan => plan.id === subscription.plan)
 
