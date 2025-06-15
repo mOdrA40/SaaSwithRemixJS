@@ -25,6 +25,7 @@ export interface LabelProps
 const Label = React.forwardRef<HTMLLabelElement, LabelProps>(
     ({ className, variant, ...props }, ref) => {
         return (
+            // eslint-disable-next-line jsx-a11y/label-has-associated-control
             <label
                 className={cn(labelVariants({ variant, className }))}
                 ref={ref}

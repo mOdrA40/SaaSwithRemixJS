@@ -99,13 +99,9 @@ export default function Contact() {
     // React Hook Form setup
     const {
         register,
-        handleSubmit,
         formState: { errors, isValid, isDirty },
-        watch,
         control,
-        reset,
-        setValue,
-        getValues
+        reset
     } = useForm<ContactInput>({
         resolver: zodResolver(contactSchema),
         mode: "onChange",
@@ -266,7 +262,7 @@ export default function Contact() {
 
                                     {/* Category Selection */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                        <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                                             Kategori Pertanyaan
                                         </label>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -339,7 +335,7 @@ export default function Contact() {
 
                                     {/* Priority Selection */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                        <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                                             Prioritas
                                         </label>
                                         <div className="flex space-x-4">

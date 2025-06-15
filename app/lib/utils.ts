@@ -49,4 +49,15 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
         clearTimeout(timeout)
         timeout = setTimeout(() => func(...args), wait)
     }
-} 
+}
+
+export function formatSalary(salary: { min: number; max: number; currency: string }): string {
+    const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: salary.currency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    })
+
+    return `${formatter.format(salary.min)} - ${formatter.format(salary.max)}`
+}

@@ -20,7 +20,7 @@ export default function AuthDemo() {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | undefined>(undefined)
 
-    const handleLoginSubmit = (data: any) => {
+    const handleLoginSubmit = (data: { email: string; password: string }) => {
         console.log("Login data:", data)
         setIsLoading(true)
         setError(undefined)

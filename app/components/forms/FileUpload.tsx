@@ -6,7 +6,6 @@ import {
     PhotoIcon,
     VideoCameraIcon,
     MusicalNoteIcon,
-    XMarkIcon,
     CheckCircleIcon,
     ExclamationTriangleIcon,
     EyeIcon,
@@ -52,7 +51,7 @@ const FileUpload = ({
 }: FileUploadProps) => {
     const [files, setFiles] = useState<UploadedFile[]>([])
     const [isDragOver, setIsDragOver] = useState(false)
-    const [isUploading, setIsUploading] = useState(false)
+    const [, setIsUploading] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
     const getFileIcon = (fileType: string) => {
@@ -70,19 +69,19 @@ const FileUpload = ({
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
     }
 
-    const validateFile = (file: File): string | null => {
+    const validateFile = useCallback((file: File): string | null => {
         if (file.size > maxSize) {
             return `File size exceeds ${formatFileSize(maxSize)}`
         }
-        
+
         if (allowedTypes.length > 0 && !allowedTypes.includes(file.type)) {
             return `File type ${file.type} is not allowed`
         }
-        
-        return null
-    }
 
-    const createFilePreview = (file: File): Promise<string | null> => {
+        return null
+    }, [maxSize, allowedTypes])
+
+    const createFilePreview = useCallback((file: File): Promise<string | null> => {
         return new Promise((resolve) => {
             if (file.type.startsWith('image/')) {
                 const reader = new FileReader()
@@ -93,19 +92,19 @@ const FileUpload = ({
                 resolve(null)
             }
         })
-    }
+    }, [])
 
-    const processFiles = async (fileList: FileList) => {
+    const processFiles = useCallback(async (fileList: FileList) => {
         const newFiles: UploadedFile[] = []
-        
+
         for (let i = 0; i < fileList.length; i++) {
             const file = fileList[i]
             const error = validateFile(file)
             const preview = await createFilePreview(file)
-            
+
             newFiles.push({
                 file,
-                id: Math.random().toString(36).substr(2, 9),
+                id: Math.random().toString(36).substring(2, 11),
                 progress: 0,
                 status: error ? 'error' : 'uploading',
                 preview: preview || undefined,
@@ -126,46 +125,47 @@ const FileUpload = ({
         if (onUpload && !newFiles.some(f => f.error)) {
             await simulateUpload(newFiles)
         }
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [files.length, maxFiles, onFilesChange, onUpload, validateFile, createFilePreview])
 
-    const simulateUpload = async (filesToUpload: UploadedFile[]) => {
+    const simulateUpload = useCallback(async (filesToUpload: UploadedFile[]) => {
         setIsUploading(true)
-        
+
         for (const uploadFile of filesToUpload) {
             if (uploadFile.error) continue
-            
+
             // Simulate upload progress
             for (let progress = 0; progress <= 100; progress += 10) {
                 await new Promise(resolve => setTimeout(resolve, 100))
-                
-                setFiles(prev => prev.map(f => 
-                    f.id === uploadFile.id 
+
+                setFiles(prev => prev.map(f =>
+                    f.id === uploadFile.id
                         ? { ...f, progress }
                         : f
                 ))
             }
-            
+
             // Mark as completed
-            setFiles(prev => prev.map(f => 
-                f.id === uploadFile.id 
+            setFiles(prev => prev.map(f =>
+                f.id === uploadFile.id
                     ? { ...f, status: 'completed' }
                     : f
             ))
         }
-        
+
         setIsUploading(false)
-        
+
         try {
             await onUpload?.(filesToUpload.map(f => f.file))
         } catch (error) {
             // Mark files as error
-            setFiles(prev => prev.map(f => 
+            setFiles(prev => prev.map(f =>
                 filesToUpload.some(uf => uf.id === f.id)
                     ? { ...f, status: 'error', error: 'Upload failed' }
                     : f
             ))
         }
-    }
+    }, [onUpload])
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault()
@@ -180,14 +180,14 @@ const FileUpload = ({
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault()
         setIsDragOver(false)
-        
+
         if (disabled) return
-        
+
         const droppedFiles = e.dataTransfer.files
         if (droppedFiles.length > 0) {
             processFiles(droppedFiles)
         }
-    }, [disabled])
+    }, [disabled, processFiles])
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFiles = e.target.files

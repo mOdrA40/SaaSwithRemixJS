@@ -266,7 +266,7 @@ export default function DashboardDemo() {
                                                     Interactive Chart Component
                                                 </p>
                                                 <p className="text-sm text-gray-500">
-                                                    Install 'recharts' to see live charts
+                                                    Install &apos;recharts&apos; to see live charts
                                                 </p>
                                             </div>
                                         </div>

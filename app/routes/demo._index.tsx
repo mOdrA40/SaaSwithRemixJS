@@ -233,7 +233,7 @@ export default function DemoIndex() {
                         viewport={{ once: true }}
                         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
                     >
-                        {demos.map((demo, index) => (
+                        {demos.map((demo) => (
                             <motion.div
                                 key={demo.id}
                                 variants={itemVariants}

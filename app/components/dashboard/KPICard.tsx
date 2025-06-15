@@ -3,11 +3,10 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
     ArrowTrendingUpIcon,
     ArrowTrendingDownIcon,
-    EyeIcon,
     InformationCircleIcon,
     SparklesIcon
 } from "@heroicons/react/24/outline"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/Card"
 import { cn } from "~/lib/utils"
 
 interface KPICardProps {

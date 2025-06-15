@@ -5,8 +5,7 @@ import {
     ExclamationTriangleIcon,
     InformationCircleIcon,
     XCircleIcon,
-    XMarkIcon,
-    BellIcon
+    XMarkIcon
 } from "@heroicons/react/24/outline"
 import { Button } from "~/components/ui/Button"
 import { cn } from "~/lib/utils"
@@ -58,7 +57,7 @@ export const NotificationProvider = ({
     const [notifications, setNotifications] = useState<Notification[]>([])
 
     const addNotification = (notification: Omit<Notification, 'id' | 'timestamp'>) => {
-        const id = Math.random().toString(36).substr(2, 9)
+        const id = Math.random().toString(36).substring(2, 11)
         const newNotification: Notification = {
             ...notification,
             id,

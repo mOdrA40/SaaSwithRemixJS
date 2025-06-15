@@ -68,16 +68,7 @@ const kpiData = [
     }
 ]
 
-// Mock chart data
-const chartData = [
-    { name: 'Jan', value: 4000, previousValue: 3500 },
-    { name: 'Feb', value: 3000, previousValue: 2800 },
-    { name: 'Mar', value: 5000, previousValue: 4200 },
-    { name: 'Apr', value: 4500, previousValue: 4000 },
-    { name: 'May', value: 6000, previousValue: 5200 },
-    { name: 'Jun', value: 5500, previousValue: 5000 },
-    { name: 'Jul', value: 7000, previousValue: 6200 }
-]
+// Mock chart data - removed unused variable
 
 const pieData = [
     { name: 'Desktop', value: 45 },
@@ -129,7 +120,7 @@ const DashboardDemo = () => {
                         Dashboard Overview
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 mt-2">
-                        Welcome back! Here's what's happening with your business today.
+                        Welcome back! Here&apos;s what&apos;s happening with your business today.
                     </p>
                 </div>
                 
@@ -201,7 +192,7 @@ const DashboardDemo = () => {
                                     Chart component will be rendered here
                                 </p>
                                 <p className="text-sm text-gray-500 mt-2">
-                                    Install 'recharts' to see interactive charts
+                                    Install &apos;recharts&apos; to see interactive charts
                                 </p>
                             </div>
                         </div>

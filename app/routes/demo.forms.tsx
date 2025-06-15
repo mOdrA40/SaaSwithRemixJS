@@ -131,7 +131,7 @@ export default function FormsDemo() {
         }
     ]
 
-    const handleFormComplete = (data: any) => {
+    const handleFormComplete = (data: Record<string, unknown>) => {
         console.log("Form completed:", data)
         alert("Form completed successfully! (Demo)")
     }

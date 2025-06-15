@@ -13,9 +13,7 @@ import {
     StarIcon,
     ArrowRightIcon,
     CheckCircleIcon,
-    BuildingOfficeIcon,
-    CalendarDaysIcon,
-    ChartBarIcon
+    CalendarDaysIcon
 } from "@heroicons/react/24/outline"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
 import { Button } from "~/components/ui/Button"
@@ -59,25 +57,64 @@ const staggerContainer = {
 const useCounter = (end: number, duration: number = 2000) => {
     const [count, setCount] = useState(0)
     const [isVisible, setIsVisible] = useState(false)
-    
+
     useEffect(() => {
         if (!isVisible) return
-        
+
         let startTime: number
         const animate = (currentTime: number) => {
             if (!startTime) startTime = currentTime
             const progress = Math.min((currentTime - startTime) / duration, 1)
             setCount(Math.floor(progress * end))
-            
+
             if (progress < 1) {
                 requestAnimationFrame(animate)
             }
         }
-        
+
         requestAnimationFrame(animate)
     }, [end, duration, isVisible])
-    
+
     return { count, setIsVisible }
+}
+
+// Separate component for stat item to avoid hook rules violations
+const StatItem = ({ stat, index }: { stat: typeof companyStats[0], index: number }) => {
+    const { count, setIsVisible } = useCounter(stat.value)
+    const ref = useRef<HTMLDivElement>(null)
+    const isInView = useInView(ref, { once: true })
+
+    useEffect(() => {
+        if (isInView) setIsVisible(true)
+    }, [isInView, setIsVisible])
+
+    const fadeInUp = {
+        initial: { opacity: 0, y: 30 },
+        animate: { opacity: 1, y: 0 }
+    }
+
+    return (
+        <motion.div
+            key={stat.label}
+            ref={ref}
+            variants={fadeInUp}
+            className="text-center"
+        >
+            <div className="relative">
+                <motion.div
+                    initial={{ scale: 0 }}
+                    animate={isInView ? { scale: 1 } : { scale: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2"
+                >
+                    {count.toLocaleString()}{stat.suffix}
+                </motion.div>
+                <p className="text-gray-600 dark:text-gray-400 font-medium">
+                    {stat.label}
+                </p>
+            </div>
+        </motion.div>
+    )
 }
 
 // Company data
@@ -265,7 +302,7 @@ export default function About() {
                         className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto leading-relaxed mb-12"
                     >
                         Driven by passion, guided by innovation, and committed to transforming 
-                        how businesses operate in the digital age. We don't just build software—
+                        how businesses operate in the digital age. We don&apos;t just build software—
                         <span className="font-semibold text-gray-900 dark:text-white"> we craft experiences that inspire.</span>
                     </motion.p>
 
@@ -317,38 +354,9 @@ export default function About() {
                         viewport={{ once: true }}
                         className="grid grid-cols-2 lg:grid-cols-4 gap-8"
                     >
-                        {companyStats.map((stat, index) => {
-                            const { count, setIsVisible } = useCounter(stat.value)
-                            const ref = useRef<HTMLDivElement>(null)
-                            const isInView = useInView(ref, { once: true })
-
-                            useEffect(() => {
-                                if (isInView) setIsVisible(true)
-                            }, [isInView, setIsVisible])
-
-                            return (
-                                <motion.div
-                                    key={stat.label}
-                                    ref={ref}
-                                    variants={fadeInUp}
-                                    className="text-center"
-                                >
-                                    <div className="relative">
-                                        <motion.div
-                                            initial={{ scale: 0 }}
-                                            animate={isInView ? { scale: 1 } : { scale: 0 }}
-                                            transition={{ duration: 0.6, delay: index * 0.1 }}
-                                            className="text-4xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2"
-                                        >
-                                            {count.toLocaleString()}{stat.suffix}
-                                        </motion.div>
-                                        <p className="text-gray-600 dark:text-gray-400 font-medium">
-                                            {stat.label}
-                                        </p>
-                                    </div>
-                                </motion.div>
-                            )
-                        })}
+                        {companyStats.map((stat, index) => (
+                            <StatItem key={stat.label} stat={stat} index={index} />
+                        ))}
                     </motion.div>
                 </div>
             </section>

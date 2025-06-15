@@ -109,14 +109,14 @@ const TwoFactorAuth = ({
                 return {
                     icon: DevicePhoneMobileIcon,
                     title: 'SMS Verification',
-                    description: `We've sent a 6-digit code to ${phoneNumber || 'your phone'}`,
+                    description: `We&apos;ve sent a 6-digit code to ${phoneNumber || 'your phone'}`,
                     color: 'from-green-500 to-emerald-500'
                 }
             case 'email':
                 return {
                     icon: ShieldCheckIcon,
                     title: 'Email Verification',
-                    description: `We've sent a 6-digit code to ${email || 'your email'}`,
+                    description: `We&apos;ve sent a 6-digit code to ${email || 'your email'}`,
                     color: 'from-blue-500 to-cyan-500'
                 }
             case 'app':
@@ -283,7 +283,7 @@ const TwoFactorAuth = ({
 
                     {/* Help Text */}
                     <div className="text-center text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                        <p>Didn't receive the code? Check your spam folder</p>
+                        <p>Didn&apos;t receive the code? Check your spam folder</p>
                         <p>or try a different verification method</p>
                     </div>
                 </CardContent>

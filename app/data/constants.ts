@@ -260,4 +260,42 @@ export const ANIMATION_DURATION = {
     fast: 150,
     normal: 300,
     slow: 500
-} 
+}
+
+// Blog categories
+export const BLOG_CATEGORIES = [
+    { id: "all", name: "Semua", slug: "all" },
+    { id: "product", name: "Product Updates", slug: "product" },
+    { id: "tutorial", name: "Tutorial", slug: "tutorial" },
+    { id: "company", name: "Company News", slug: "company" },
+    { id: "tech", name: "Technology", slug: "tech" }
+]
+
+// Job departments
+export const JOB_DEPARTMENTS = [
+    { id: "all", name: "Semua Departemen", slug: "all" },
+    { id: "engineering", name: "Engineering", slug: "engineering" },
+    { id: "design", name: "Design", slug: "design" },
+    { id: "marketing", name: "Marketing", slug: "marketing" },
+    { id: "sales", name: "Sales", slug: "sales" },
+    { id: "hr", name: "Human Resources", slug: "hr" }
+]
+
+// Job types
+export const JOB_TYPES = [
+    { id: "all", name: "Semua Tipe", slug: "all" },
+    { id: "full-time", name: "Full Time", slug: "full-time" },
+    { id: "part-time", name: "Part Time", slug: "part-time" },
+    { id: "contract", name: "Contract", slug: "contract" },
+    { id: "internship", name: "Internship", slug: "internship" }
+]
+
+// Help categories
+export const HELP_CATEGORIES = [
+    { id: "getting-started", name: "Getting Started", icon: "🚀" },
+    { id: "account", name: "Account & Billing", icon: "💳" },
+    { id: "features", name: "Features", icon: "⚡" },
+    { id: "integrations", name: "Integrations", icon: "🔗" },
+    { id: "troubleshooting", name: "Troubleshooting", icon: "🔧" },
+    { id: "api", name: "API Documentation", icon: "📚" }
+]

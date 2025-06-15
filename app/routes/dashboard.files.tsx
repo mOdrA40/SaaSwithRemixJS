@@ -408,10 +408,11 @@ export default function FileManager() {
                 <div className="mt-4 sm:mt-0 flex items-center space-x-3">
                     {/* Infinite Scroll Toggle */}
                     <div className="flex items-center space-x-2">
-                        <label className="text-sm text-gray-600 dark:text-gray-400">
+                        <label htmlFor="large-list-toggle" className="text-sm text-gray-600 dark:text-gray-400">
                             Large List Mode:
                         </label>
                         <button
+                            id="large-list-toggle"
                             onClick={() => setUseInfiniteScroll(!useInfiniteScroll)}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                                 useInfiniteScroll

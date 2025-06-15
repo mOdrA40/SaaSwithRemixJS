@@ -23,7 +23,7 @@ interface FormStep {
 
 interface MultiStepFormProps {
     steps: FormStep[]
-    onComplete?: (data: any) => void
+    onComplete?: (data: Record<string, unknown>) => void
     onStepChange?: (currentStep: number, direction: 'next' | 'prev') => void
     autoSave?: boolean
     autoSaveInterval?: number
@@ -46,7 +46,7 @@ const MultiStepForm = ({
     const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set())
     const [isValidating, setIsValidating] = useState(false)
     const [validationErrors, setValidationErrors] = useState<Record<number, string>>({})
-    const [formData, setFormData] = useState<any>({})
+    const [formData] = useState<Record<string, unknown>>({})
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [isAutoSaving, setIsAutoSaving] = useState(false)
 

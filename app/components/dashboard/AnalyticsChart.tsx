@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import {
     LineChart,
     Line,
@@ -20,11 +20,9 @@ import {
     ChartBarIcon,
     ArrowTrendingUpIcon,
     ArrowTrendingDownIcon,
-    EyeIcon,
     CalendarDaysIcon
 } from "@heroicons/react/24/outline"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/Card"
-import { Button } from "~/components/ui/Button"
 import { cn } from "~/lib/utils"
 
 interface ChartData {
@@ -33,6 +31,21 @@ interface ChartData {
     previousValue?: number
     date?: string
     category?: string
+}
+
+interface TooltipPayload {
+    name: string
+    value: number
+    color: string
+    payload?: {
+        map?: (fn: (item: TooltipPayload, index: number) => React.ReactNode) => React.ReactNode[]
+    }
+}
+
+interface TooltipProps {
+    active?: boolean
+    payload?: TooltipPayload[]
+    label?: string
 }
 
 interface AnalyticsChartProps {
@@ -104,7 +117,7 @@ const AnalyticsChart = ({
         { value: '1y', label: '1 Year' }
     ]
 
-    const CustomTooltip = ({ active, payload, label }: any) => {
+    const CustomTooltip = ({ active, payload, label }: TooltipProps) => {
         if (active && payload && payload.length) {
             return (
                 <motion.div
@@ -113,10 +126,11 @@ const AnalyticsChart = ({
                     className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
                 >
                     <p className="font-semibold text-gray-900 dark:text-white mb-2">{label}</p>
-                    {payload.map((entry: any, index: number) => (
+                    {/* eslint-disable-next-line react/prop-types */}
+                    {payload.map((entry: TooltipPayload, index: number) => (
                         <div key={index} className="flex items-center space-x-2">
-                            <div 
-                                className="w-3 h-3 rounded-full" 
+                            <div
+                                className="w-3 h-3 rounded-full"
                                 style={{ backgroundColor: entry.color }}
                             />
                             <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -130,11 +144,11 @@ const AnalyticsChart = ({
         return null
     }
 
-    const CustomPieTooltip = ({ active, payload }: any) => {
+    const CustomPieTooltip = ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => {
         if (active && payload && payload.length) {
             const data = payload[0]
             const percentage = ((data.value / total) * 100).toFixed(1)
-            
+
             return (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.8 }}
@@ -234,9 +248,10 @@ const AnalyticsChart = ({
                                 onMouseEnter={(_, index) => setActiveIndex(index)}
                                 onMouseLeave={() => setActiveIndex(null)}
                             >
-                                {data.map((entry, index) => (
-                                    <Cell 
-                                        key={`cell-${index}`} 
+                                {/* eslint-disable-next-line react/prop-types */}
+                                {data.map((_, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
                                         fill={PIE_COLORS[index % PIE_COLORS.length]}
                                         stroke={activeIndex === index ? "#fff" : "none"}
                                         strokeWidth={activeIndex === index ? 2 : 0}
@@ -381,10 +396,11 @@ const AnalyticsChart = ({
                             transition={{ delay: 0.4 }}
                             className="mt-4 grid grid-cols-2 gap-2"
                         >
+                            {/* eslint-disable-next-line react/prop-types */}
                             {data.map((entry, index) => (
                                 <div key={entry.name} className="flex items-center space-x-2">
-                                    <div 
-                                        className="w-3 h-3 rounded-full" 
+                                    <div
+                                        className="w-3 h-3 rounded-full"
                                         style={{ backgroundColor: PIE_COLORS[index % PIE_COLORS.length] }}
                                     />
                                     <span className="text-sm text-gray-600 dark:text-gray-400">

@@ -159,7 +159,7 @@ export function ComponentErrorBoundary({ children }: { children: React.ReactNode
                         <span className="font-medium">Component Error</span>
                     </div>
                     <p className="text-sm text-red-700 dark:text-red-300 mb-3">
-                        This component encountered an error and couldn't render properly.
+                        This component encountered an error and couldn&apos;t render properly.
                     </p>
                     <Button
                         onClick={resetErrorBoundary}
